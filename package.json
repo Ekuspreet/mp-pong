@@ -1,0 +1,15 @@
+{
+  "name": "mp-pong-monorepo",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Realtime multiplayer game (scaffold only)",
+  "workspaces": [
+    "shared",
+    "server",
+    "client"
+  ],
+  "scripts": {
+    "dev": "echo 'Add dev script later'",
+    "build": "echo 'Add build pipeline later'"
+  }
+}
