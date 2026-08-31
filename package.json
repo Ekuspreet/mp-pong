@@ -2,14 +2,31 @@
   "name": "mp-pong-monorepo",
   "private": true,
   "version": "0.0.0",
-  "description": "Realtime multiplayer game (scaffold only)",
+  "description": "Server-authoritative multiplayer polygon Pong prototype",
   "workspaces": [
     "shared",
     "server",
     "client"
   ],
   "scripts": {
-    "dev": "echo 'Add dev script later'",
-    "build": "echo 'Add build pipeline later'"
+    "dev": "concurrently -n shared,server,client -c yellow,cyan,green \"npm run dev -w @polygon-pong/shared\" \"npm run dev -w @polygon-pong/server\" \"npm run dev -w client\"",
+    "build": "npm run build -w @polygon-pong/shared && npm run build -w @polygon-pong/server && npm run build -w client",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "lint": "oxlint shared/src server/src client/src",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "concurrently": "^9.2.1",
+    "oxlint": "^1.79.0",
+    "prettier": "^3.6.2",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
   }
 }

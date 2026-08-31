@@ -17,6 +17,10 @@ pnpm-debug.log*
 # Env
 .env
 .env.*
+!.env.example
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
 
 # Editor
 .DS_Store
