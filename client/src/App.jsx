@@ -1,122 +1,17 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import { BrowserRouter, Link, Navigate, Route, Routes, useNavigate, useParams } from 'react-router-dom'
+import { api, GameSocket } from './api.js'
+import GameCanvas from './GameCanvas.jsx'
 import './App.css'
-
-function App() {
-  const [count, setCount] = useState(0)
-
-  return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
-}
-
-export default App
+const SessionContext = createContext(null), SocketContext = createContext(null)
+const useSession = () => useContext(SessionContext), useGameSocket = () => useContext(SocketContext)
+function Providers({ children }) { const [user, setUser] = useState(undefined), [message, setMessage] = useState(null), [status, setStatus] = useState('disconnected'); useEffect(() => { api('/auth/me').then((body) => setUser(body.user)).catch(() => setUser(null)) }, []); const socket = useMemo(() => user ? new GameSocket(setMessage, setStatus) : null, [user]); useEffect(() => () => socket?.close(), [socket]); return <SessionContext.Provider value={{ user, setUser }}><SocketContext.Provider value={{ socket, message, status }}>{children}</SocketContext.Provider></SessionContext.Provider> }
+function Protected({ children }) { const { user } = useSession(); if (user === undefined) return <p>Loading session…</p>; return user ? children : <Navigate to="/login" replace /> }
+function AuthPage({ mode }) { const { user, setUser } = useSession(), navigate = useNavigate(), [error, setError] = useState(''); if (user) return <Navigate to="/lobby" replace />; async function submit(event) { event.preventDefault(); setError(''); const data = new FormData(event.currentTarget); try { const body = await api(`/auth/${mode}`, { method: 'POST', body: JSON.stringify({ username: data.get('username'), password: data.get('password') }) }); setUser(body.user); navigate('/lobby') } catch (e) { setError(e.message) } } return <main><h1>{mode === 'login' ? 'Sign in' : 'Create account'}</h1><form onSubmit={submit}><label>Username <input name="username" required minLength="3" maxLength="20" autoComplete="username" /></label><label>Password <input name="password" type="password" required minLength="8" autoComplete={mode === 'login' ? 'current-password' : 'new-password'} /></label><button>Submit</button></form>{error && <p role="alert">{error}</p>}<Link to={mode === 'login' ? '/register' : '/login'}>{mode === 'login' ? 'Create account' : 'Sign in'}</Link></main> }
+function Header() { const { user, setUser } = useSession(), navigate = useNavigate(); if (!user) return null; return <header><strong>Polygon Pong</strong> — {user.username}<nav><Link to="/lobby">Lobby</Link> <Link to="/history">History</Link> <button onClick={async () => { await api('/auth/logout', { method: 'POST' }); setUser(null); navigate('/login') }}>Log out</button></nav></header> }
+function Lobby() { const navigate = useNavigate(), [rooms, setRooms] = useState([]), [code, setCode] = useState(''), [error, setError] = useState(''); const load = () => api('/rooms').then((b) => setRooms(b.rooms)).catch((e) => setError(e.message)); useEffect(load, []); async function create() { try { const { room } = await api('/rooms', { method: 'POST', body: JSON.stringify({ visibility: 'public' }) }); navigate(`/rooms/${room.id}`) } catch (e) { setError(e.message) } } return <main><h1>Lobby</h1><button onClick={create}>Create room</button><form onSubmit={(e) => { e.preventDefault(); navigate(`/rooms/${code}`) }}><label>Invite code <input value={code} onChange={(e) => setCode(e.target.value)} required /></label><button>Join</button></form><button onClick={load}>Refresh rooms</button>{error && <p role="alert">{error}</p>}<ul>{rooms.map((room) => <li key={room.id}><Link to={`/rooms/${room.id}`}>{room.code}</Link> ({room.members.length}/8)</li>)}</ul></main> }
+function Room() { const { id } = useParams(), navigate = useNavigate(), { user } = useSession(), { socket, message, status } = useGameSocket(), [room, setRoom] = useState(null), [error, setError] = useState(''); useEffect(() => { if (socket && status === 'connected') socket.send('room.join', { roomId: id }).catch((e) => setError(e.message)) }, [socket, status, id]); useEffect(() => { if (message?.type === 'room.snapshot') setRoom(message.payload); if (message?.type === 'match.started') navigate(`/matches/${message.payload.matchId}`); if (message?.type === 'error') setError(message.payload.message) }, [message, navigate]); const member = room?.members.find((m) => m.id === user.id); return <main><h1>Room {room?.code ?? id}</h1><p>Connection: {status}</p>{error && <p role="alert">{error}</p>}<ul>{room?.members.map((m) => <li key={m.id}>{m.username} {m.host && '(host)'} — {m.ready ? 'ready' : 'not ready'} {m.connected ? '' : '(disconnected)'}</li>)}</ul><button disabled={!socket} onClick={() => socket.send('room.ready', { ready: !member?.ready }).catch((e) => setError(e.message))}>{member?.ready ? 'Not ready' : 'Ready'}</button> <button disabled={!member?.host || room.members.length < 2 || !room.members.every((m) => m.ready)} onClick={() => socket.send('room.start').catch((e) => setError(e.message))}>Start match</button></main> }
+function Match() { const { id } = useParams(), { user } = useSession(), { socket, message, status } = useGameSocket(), [snapshot, setSnapshot] = useState(null), sequence = useRef(0), held = useRef(new Set()); useEffect(() => { if (message?.type === 'game.snapshot' || message?.type === 'match.started') setSnapshot(message.payload) }, [message]); useEffect(() => { const send = () => { const direction = held.current.has('left') === held.current.has('right') ? 0 : held.current.has('left') ? -1 : 1; socket?.send('input.set', { sequence: ++sequence.current, direction }).catch(() => {}) }; const key = (event, down) => { const side = ['ArrowLeft', 'ArrowUp', 'a', 'A', 'w', 'W'].includes(event.key) ? 'left' : ['ArrowRight', 'ArrowDown', 'd', 'D', 's', 'S'].includes(event.key) ? 'right' : null; if (!side) return; event.preventDefault(); const changed = down ? !held.current.has(side) : held.current.has(side); if (down) held.current.add(side); else held.current.delete(side); if (changed) send() }; const down = (e) => key(e, true), up = (e) => key(e, false), clear = () => { held.current.clear(); send() }; addEventListener('keydown', down); addEventListener('keyup', up); addEventListener('blur', clear); return () => { removeEventListener('keydown', down); removeEventListener('keyup', up); removeEventListener('blur', clear); clear() } }, [socket]); const me = snapshot?.players.find((p) => p.id === user.id); return <main><h1>Match {id}</h1><p>Connection: {status} | Phase: {snapshot?.phase ?? 'waiting'} | Stage: {snapshot?.stage ?? '-'}</p>{snapshot?.phase === 'countdown' && <p>Countdown active</p>}<GameCanvas snapshot={snapshot} /><p>Controls: arrows or WASD. You are {me?.status ?? 'connecting'}.</p><ol>{snapshot?.players.slice().sort((a, b) => (a.placement ?? 99) - (b.placement ?? 99)).map((p) => <li key={p.id}>{p.username}: {p.status}, returns {p.returns}{p.placement ? `, place ${p.placement}` : ''}</li>)}</ol>{snapshot?.winnerId && <p><strong>Winner: {snapshot.players.find((p) => p.id === snapshot.winnerId)?.username}</strong></p>}<Link to="/lobby">Return to lobby</Link></main> }
+function History() { const [matches, setMatches] = useState([]); useEffect(() => { api('/matches').then((b) => setMatches(b.matches)) }, []); return <main><h1>Match history</h1><ul>{matches.map((m) => <li key={m.id}>{new Date(m.started_at).toLocaleString()} — {m.status} — {m.id}</li>)}</ul></main> }
+function AppRoutes() { return <><Header /><Routes><Route path="/login" element={<AuthPage mode="login" />} /><Route path="/register" element={<AuthPage mode="register" />} /><Route path="/lobby" element={<Protected><Lobby /></Protected>} /><Route path="/rooms/:id" element={<Protected><Room /></Protected>} /><Route path="/matches/:id" element={<Protected><Match /></Protected>} /><Route path="/history" element={<Protected><History /></Protected>} /><Route path="*" element={<Navigate to="/lobby" replace />} /></Routes></> }
+export default function App() { return <BrowserRouter><Providers><AppRoutes /></Providers></BrowserRouter> }
