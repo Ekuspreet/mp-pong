@@ -21,6 +21,7 @@ export function createApp(config: Config, db: Db, services: Services) {
   app.get('/health/live', (_req, res) => res.json({ status: 'ok' })); app.get('/health/ready', (_req, res) => { db.prepare('SELECT 1').get(); res.json({ status: 'ready' }) })
   app.post('/api/auth/register', async (req, res, next) => { try { const user = await services.auth.register(String(req.body?.username ?? ''), String(req.body?.password ?? '')); services.auth.createSession(user.id, res); res.status(201).json({ user }) } catch (e) { next(e) } })
   app.post('/api/auth/login', async (req, res, next) => { try { const user = await services.auth.login(String(req.body?.username ?? ''), String(req.body?.password ?? '')); services.auth.createSession(user.id, res); res.json({ user }) } catch (e) { next(e) } })
+  app.post('/api/auth/guest', (_req, res, next) => { try { const user = services.auth.createGuest(); services.auth.createSession(user.id, res); res.status(201).json({ user }) } catch (e) { next(e) } })
   app.post('/api/auth/logout', (req, res) => { services.auth.logout(req, res); res.status(204).end() })
   app.get('/api/auth/me', requireUser(services.auth), (req, res) => res.json({ user: userOf(req) }))
   app.get('/api/rooms', requireUser(services.auth), (_req, res) => res.json({ rooms: services.rooms.list() }))

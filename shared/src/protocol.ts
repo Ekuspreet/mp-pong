@@ -13,7 +13,7 @@ export const clientMessageSchema = z.discriminatedUnion('type', [
 ])
 export type ClientMessage = z.infer<typeof clientMessageSchema>
 export interface ServerEnvelope<T = unknown> { type: string; sequence: number; serverTime: number; payload: T; requestId?: string; protocolVersion?: typeof PROTOCOL_VERSION }
-export interface PublicUser { id: string; username: string }
+export interface PublicUser { id: string; username: string; guest?: boolean }
 export interface RoomMember extends PublicUser { ready: boolean; host: boolean; connected: boolean }
 export interface RoomSnapshot { id: string; code: string; visibility: 'public' | 'private'; status: 'open' | 'in_match' | 'finished'; members: RoomMember[]; matchId: string | null }
 export interface ApiError { error: { code: string; message: string } }

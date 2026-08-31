@@ -15,4 +15,4 @@ export class RoomRegistry {
   canStart(room: Room, userId: string): boolean { return room.hostId === userId && room.members.size >= 2 && [...room.members.values()].every((m) => m.ready) && room.status === 'open' }
   list(): RoomSnapshot[] { return [...this.rooms.values()].filter((r) => r.visibility === 'public' && r.status === 'open').map(snapshotRoom) }
 }
-export function snapshotRoom(room: Room): RoomSnapshot { return { id: room.id, code: room.code, visibility: room.visibility, status: room.status, matchId: room.matchId, members: [...room.members.values()].map((m) => ({ id: m.id, username: m.username, ready: m.ready, connected: m.connected, host: m.id === room.hostId })) } }
+export function snapshotRoom(room: Room): RoomSnapshot { return { id: room.id, code: room.code, visibility: room.visibility, status: room.status, matchId: room.matchId, members: [...room.members.values()].map((m) => ({ id: m.id, username: m.username, guest: m.guest, ready: m.ready, connected: m.connected, host: m.id === room.hostId })) } }
