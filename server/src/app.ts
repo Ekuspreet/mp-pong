@@ -25,7 +25,7 @@ export function createApp(config: Config, db: Db, services: Services) {
   app.post('/api/rooms', requireUser(services.auth), (req, res, next) => { try { res.status(201).json({ room: snapshotRoom(services.rooms.create(userOf(req), req.body?.visibility === 'private' ? 'private' : 'public')) }) } catch (e) { next(e) } })
   app.get('/api/rooms/:id', requireUser(services.auth), (req, res) => { const id = String(req.params.id); const room = services.rooms.rooms.get(id) ?? [...services.rooms.rooms.values()].find((r) => r.code === id.toUpperCase()); return room ? res.json({ room: snapshotRoom(room) }) : res.status(404).json({ error: { code: 'ROOM_NOT_FOUND', message: 'Room not found' } }) })
   app.get('/api/matches', requireUser(services.auth), (req, res) => res.json({ matches: services.matches.history(userOf(req).id) }))
-  app.get('/api/matches/:id', requireUser(services.auth), (req, res) => { const result = services.matches.result(String(req.params.id)); return result ? res.json({ match: result }) : res.status(404).json({ error: { code: 'MATCH_NOT_FOUND', message: 'Match not found' } }) })
+  app.get('/api/matches/:id', requireUser(services.auth), (req, res) => { const result = services.matches.result(String(req.params.id)); return result ? res.json(result) : res.status(404).json({ error: { code: 'MATCH_NOT_FOUND', message: 'Match not found' } }) })
   app.use((error: Error & { status?: number; code?: string }, _req: Request, res: Response, _next: NextFunction) => res.status(error.status ?? 500).json({ error: { code: error.code ?? 'INTERNAL_ERROR', message: error.status ? error.message : 'Unexpected server error' } }))
   return app
 }
