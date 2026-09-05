@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url'
 import type { Config } from './config.js'
 import type { Db } from './db.js'
 import { AuthService, type AuthUser } from './auth.js'
-import { RoomRegistry, snapshotRoom } from './rooms.js'
+import { parseGameOptions, RoomRegistry, snapshotRoom } from './rooms.js'
 import type { MatchManager } from './matches.js'
 
 export interface Services { auth: AuthService; rooms: RoomRegistry; matches: MatchManager }
@@ -21,12 +21,12 @@ export function createApp(config: Config, db: Db, services: Services) {
   app.get('/health/live', (_req, res) => res.json({ status: 'ok' })); app.get('/health/ready', (_req, res) => { db.prepare('SELECT 1').get(); res.json({ status: 'ready' }) })
   app.post('/api/auth/register', async (req, res, next) => { try { const user = await services.auth.register(String(req.body?.username ?? ''), String(req.body?.password ?? '')); services.auth.createSession(user.id, res); res.status(201).json({ user }) } catch (e) { next(e) } })
   app.post('/api/auth/login', async (req, res, next) => { try { const user = await services.auth.login(String(req.body?.username ?? ''), String(req.body?.password ?? '')); services.auth.createSession(user.id, res); res.json({ user }) } catch (e) { next(e) } })
-  app.post('/api/auth/guest', (_req, res, next) => { try { const user = services.auth.createGuest(); services.auth.createSession(user.id, res); res.status(201).json({ user }) } catch (e) { next(e) } })
+  app.post('/api/auth/guest', (req, res, next) => { try { const username = req.body?.username === undefined ? undefined : String(req.body.username); const user = services.auth.createGuest(username); services.auth.createSession(user.id, res); res.status(201).json({ user }) } catch (e) { next(e) } })
   app.post('/api/auth/logout', (req, res) => { services.auth.logout(req, res); res.status(204).end() })
   app.get('/api/auth/me', requireUser(services.auth), (req, res) => res.json({ user: userOf(req) }))
   app.get('/api/rooms', requireUser(services.auth), (_req, res) => res.json({ rooms: services.rooms.list() }))
-  app.post('/api/rooms', requireUser(services.auth), (req, res, next) => { try { res.status(201).json({ room: snapshotRoom(services.rooms.create(userOf(req), req.body?.visibility === 'private' ? 'private' : 'public')) }) } catch (e) { next(e) } })
-  app.get('/api/rooms/:id', requireUser(services.auth), (req, res) => { const id = String(req.params.id); const room = services.rooms.rooms.get(id) ?? [...services.rooms.rooms.values()].find((r) => r.code === id.toUpperCase()); return room ? res.json({ room: snapshotRoom(room) }) : res.status(404).json({ error: { code: 'ROOM_NOT_FOUND', message: 'Room not found' } }) })
+  app.post('/api/rooms', requireUser(services.auth), (req, res, next) => { try { const options = parseGameOptions(req.body?.options); res.status(201).json({ room: snapshotRoom(services.rooms.create(userOf(req), req.body?.visibility === 'private' ? 'private' : 'public', options)) }) } catch (e) { next(e) } })
+  app.get('/api/rooms/:id', requireUser(services.auth), (req, res) => { const id = String(req.params.id); const room = services.rooms.find(id); return room ? res.json({ room: snapshotRoom(room) }) : res.status(404).json({ error: { code: 'ROOM_NOT_FOUND', message: 'Room not found' } }) })
   app.get('/api/matches', requireUser(services.auth), (req, res) => res.json({ matches: services.matches.history(userOf(req).id) }))
   app.get('/api/matches/:id', requireUser(services.auth), (req, res) => { const result = services.matches.result(String(req.params.id)); return result ? res.json(result) : res.status(404).json({ error: { code: 'MATCH_NOT_FOUND', message: 'Match not found' } }) })
   const clientDist = fileURLToPath(new URL('../../client/dist/', import.meta.url))

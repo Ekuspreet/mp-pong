@@ -15,23 +15,49 @@ See [the rules](docs/game.md) and [the implementation plan](docs/implementation-
 
 ## Run locally
 
-Requires Node.js 22 or newer.
+Requires Node.js 22 or newer. The client and server are separate npm projects; run them in separate terminals.
+
+First install the shared protocol package and both applications:
 
 ```bash
-cp .env.example .env
-npm install
+npm install --prefix shared
+npm install --prefix server
+npm install --prefix client
+cp server/.env.example server/.env
+cp client/.env.example client/.env
+```
+
+Start the API server:
+
+```bash
+cd server
 npm run dev
 ```
 
-Open `http://localhost:5173`. Create two browser accounts (a private window is useful), create/join a room, ready both players, and start. Use arrow keys or WASD.
+The server reads its environment variables from `server/.env`.
+
+Start the frontend in another terminal:
+
+```bash
+cd client
+npm run dev
+```
+
+Open `http://localhost:8080`. The API and WebSocket server runs independently on `http://localhost:3000`.
 
 The database defaults to `data/polygon-pong.sqlite`. Rooms and active simulations live in memory; accounts and completed matches are durable.
 
 ## Verify
 
 ```bash
-npm run typecheck
+cd client
 npm run lint
+npm test
+npm run build
+
+cd ../server
+npm run lint
+npm run typecheck
 npm test
 npm run build
 ```
@@ -39,8 +65,9 @@ npm run build
 ## Production
 
 ```bash
-npm run build
-NODE_ENV=production npm start -w @polygon-pong/server
+cd client && npm run build
+cd ../server && npm run build
+NODE_ENV=production npm start
 ```
 
 Express serves `client/dist`, REST, and `/ws` on one origin. Use TLS, preserve WebSocket upgrade headers, configure `CLIENT_ORIGIN`, and persist the database directory. This prototype is single-instance only.

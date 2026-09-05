@@ -1,0 +1,31 @@
+/* CVA selects these recipes; utilities passed in className can override them. */
+@layer components {
+  .ui-button { @apply inline-flex min-h-control items-center justify-center gap-control-gap border-(length:--border-width-heavy) border-solid border-ink px-control-x py-control-y text-ink font-black text-control tracking-control leading-none uppercase no-underline shadow-control cursor-pointer transition-[transform,box-shadow,background-color] duration-(--duration-control) ease-out; }
+  .ui-button:hover { @apply -translate-x-0.5 -translate-y-0.5 shadow-control-hover; }
+  .ui-button:active { @apply translate-x-[3px] translate-y-[3px] shadow-control-active; }
+  .ui-button:disabled { @apply cursor-not-allowed grayscale-40 opacity-58 translate-none shadow-control-disabled; }
+  .ui-button--primary { @apply bg-orange; }
+  .ui-button--primary:hover { @apply bg-yellow; }
+  .ui-button--secondary { @apply bg-teal; }
+  .ui-button--ghost { @apply min-h-control-sm border-cream text-cream bg-space-950/45 shadow-ghost; }
+  .ui-button--compact { @apply min-h-control-sm px-control-sm-x py-control-sm-y text-control-sm; }
+  .ui-panel { @apply relative border-(length:--border-width-heavy) border-solid border-ink shadow-print; }
+  .ui-panel--dark { @apply text-cream bg-space-900; }
+  .ui-panel--cream { @apply text-ink bg-cream; }
+  .ui-panel--signal { @apply text-ink bg-orange; }
+  .ui-badge { @apply inline-flex w-max items-center border border-current px-badge-x pt-badge-top pb-badge-bottom text-badge font-black tracking-badge leading-none uppercase; }
+  .ui-badge--teal { @apply text-teal bg-space-900/65; }
+  .ui-badge--yellow { @apply text-space-950 bg-yellow; }
+  .ui-badge--red { @apply text-cream bg-red; }
+  .ui-icon-button { @apply grid size-control shrink-0 place-items-center border-(length:--border-width-heavy) border-solid border-ink text-icon font-black cursor-pointer transition-[transform,background-color] duration-(--duration-control); }
+  .ui-icon-button:hover { @apply -rotate-12 bg-yellow; }
+  .ui-icon-button--dark { @apply text-cream bg-space-900; }
+  .ui-icon-button--light { @apply text-ink bg-teal; }
+  .ui-field { @apply grid min-w-0 gap-field-gap; }
+  .ui-field__label { @apply text-label font-black tracking-label uppercase; }
+  .ui-field__input { @apply w-full min-h-control border-(length:--border-width-heavy) border-solid border-ink rounded-none px-field-x py-field-y text-ink bg-cream font-black tracking-[.04em] uppercase; }
+  .ui-field__input[aria-invalid="true"] { @apply border-red; }
+  .ui-field__error { @apply text-error font-extrabold; color: var(--color-error); }
+  /* Keep the keyboard indicator visible over hover/active control shadows. */
+  .ui-button:focus-visible, .ui-icon-button:focus-visible { @apply shadow-focus; }
+}

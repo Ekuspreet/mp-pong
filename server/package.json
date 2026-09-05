@@ -4,13 +4,20 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/index.ts",
+    "build:shared": "npm --prefix ../shared run build",
+    "predev": "npm run build:shared",
+    "dev": "node --env-file-if-exists=.env --import tsx --watch src/index.ts",
+    "prebuild": "npm run build:shared",
     "build": "tsc",
-    "start": "node dist/index.js",
-    "typecheck": "tsc --noEmit"
+    "start": "node --env-file-if-exists=.env dist/index.js",
+    "pretypecheck": "npm run build:shared",
+    "typecheck": "tsc --noEmit",
+    "pretest": "npm run build:shared",
+    "test": "vitest run",
+    "lint": "oxlint src"
   },
   "dependencies": {
-    "@polygon-pong/shared": "*",
+    "@polygon-pong/shared": "file:../shared",
     "argon2": "^0.44.0",
     "better-sqlite3": "^12.2.0",
     "cookie": "^1.0.2",
@@ -23,13 +30,17 @@
     "zod": "^4.1.5"
   },
   "devDependencies": {
+    "@types/node": "^24.0.0",
     "@types/better-sqlite3": "^7.6.13",
     "@types/cookie": "^1.0.0",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
     "@types/supertest": "^6.0.3",
     "@types/ws": "^8.18.1",
+    "oxlint": "^1.79.0",
     "supertest": "^7.1.4",
-    "tsx": "^4.20.5"
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
   }
 }

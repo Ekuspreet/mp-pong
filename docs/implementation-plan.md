@@ -148,6 +148,39 @@ Use UUIDs or ULIDs as externally visible IDs and integer SQLite primary keys int
 
 Rooms do not need persistence in the prototype. They disappear when empty or after an inactivity timeout. Use an unambiguous, case-insensitive six-character invite code; never expose internal maps or session identifiers.
 
+### Game creation options
+
+Every room stores one format identifier and zero or more unique modifier identifiers under `room.options`. These values are configuration metadata for now; implementing their simulation and scoring behavior is separate work.
+
+```json
+{
+  "options": {
+    "format": "stocks",
+    "modifiers": ["vortex", "multiball"]
+  }
+}
+```
+
+`POST /api/rooms` accepts this structure, validates identifiers, and defaults to `{ "format": "elimination", "modifiers": [] }`. Room list, room detail, and WebSocket snapshots return the same structure. Open rooms are currently process-local, so the options live on the in-memory room alongside visibility and membership. When durable/open-room storage is introduced, store `format_id` as a constrained string and modifiers in a normalized `room_modifiers(room_id, modifier_id)` table. Match history should copy these values at match start so completed results remain reproducible after the room disappears.
+
+Formats (choose exactly one):
+
+| Identifier | Name | Behavior |
+| --- | --- | --- |
+| `elimination` | Elimination | A miss eliminates the defender, and the polygon is rebuilt after each elimination. |
+| `best_score` | Best Score | Nobody is eliminated. A miss awards one knockout point to the last opposing player who touched the ball. The first player to the configured target wins, or the highest score when the configured time expires. |
+| `stocks` | Stocks | Each player starts with three lives. A miss loses one life; causing an opponent to miss grants 0.5 lives. The arena shrinks only when a player loses their final life. |
+
+Modifiers (choose any number):
+
+| Identifier | Name | Behavior |
+| --- | --- | --- |
+| `vortex` | Vortex | A central vortex curves the ball and slowly pulls it inward. |
+| `pulse` | Pulse | The center releases a visible shockwave at regular intervals, pushing the ball outward. |
+| `orbit` | Orbit | A gravity well moves around the arena, bending the ball's path when it passes nearby. |
+| `wormhole` | Wormhole | Two portals teleport the ball while preserving its speed and entry angle. |
+| `multiball` | Multiball | A second ball appears after a rally reaches a configured number of returns. |
+
 ## 6. Room and match state machines
 
 Room lifecycle:

@@ -15,5 +15,8 @@ export type ClientMessage = z.infer<typeof clientMessageSchema>
 export interface ServerEnvelope<T = unknown> { type: string; sequence: number; serverTime: number; payload: T; requestId?: string; protocolVersion?: typeof PROTOCOL_VERSION }
 export interface PublicUser { id: string; username: string; guest?: boolean }
 export interface RoomMember extends PublicUser { ready: boolean; host: boolean; connected: boolean }
-export interface RoomSnapshot { id: string; code: string; visibility: 'public' | 'private'; status: 'open' | 'in_match' | 'finished'; members: RoomMember[]; matchId: string | null }
+export type GameFormatId = 'elimination' | 'best_score' | 'stocks'
+export type GameModifierId = 'vortex' | 'pulse' | 'orbit' | 'wormhole' | 'multiball'
+export interface GameOptions { format: GameFormatId; modifiers: GameModifierId[] }
+export interface RoomSnapshot { id: string; code: string; visibility: 'public' | 'private'; status: 'open' | 'in_match' | 'finished'; options: GameOptions; members: RoomMember[]; matchId: string | null }
 export interface ApiError { error: { code: string; message: string } }

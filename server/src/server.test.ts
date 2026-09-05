@@ -26,6 +26,20 @@ describe('authentication API', () => {
     await agent.post('/api/rooms').send({}).expect(201)
   })
 
+  it('creates a guest with a requested retro call sign', async () => {
+    const { app } = setup(), agent = request.agent(app)
+    const response = await agent.post('/api/auth/guest').send({ username: 'Star-Marshal-X2V2' }).expect(201)
+    expect(response.body.user).toMatchObject({ username: 'Star-Marshal-X2V2', guest: true })
+    expect((await agent.get('/api/auth/me').expect(200)).body.user.username).toBe('Star-Marshal-X2V2')
+  })
+
+  it('validates and reserves requested guest call signs', async () => {
+    const { app } = setup()
+    await request(app).post('/api/auth/guest').send({ username: 'no spaces' }).expect(400)
+    await request(app).post('/api/auth/guest').send({ username: 'Nova-Ranger-A1B2' }).expect(201)
+    await request(app).post('/api/auth/guest').send({ username: 'nova-ranger-a1b2' }).expect(409)
+  })
+
   it('registers, restores, logs out, and protects APIs', async () => {
     const { app } = setup(), agent = request.agent(app)
     await agent.post('/api/auth/register').send({ username: 'Player_1', password: 'password123' }).expect(201)
@@ -45,6 +59,15 @@ describe('authentication API', () => {
 })
 
 describe('rooms', () => {
+  it('stores validated format and modifier identifiers on a room', async () => {
+    const { app } = setup(), agent = request.agent(app)
+    await agent.post('/api/auth/guest').send({}).expect(201)
+    const response = await agent.post('/api/rooms').send({ options: { format: 'stocks', modifiers: ['vortex', 'multiball'] } }).expect(201)
+    expect(response.body.room.options).toEqual({ format: 'stocks', modifiers: ['vortex', 'multiball'] })
+    await agent.post('/api/rooms').send({ options: { format: 'unknown', modifiers: [] } }).expect(400)
+    await agent.post('/api/rooms').send({ options: { format: 'elimination', modifiers: ['laser'] } }).expect(400)
+  })
+
   it('enforces membership, readiness, and host transfer', () => {
     const rooms = new RoomRegistry(), a = { id: 'a', username: 'A', guest: false }, b = { id: 'b', username: 'B', guest: false }
     const room = rooms.create(a); rooms.join(room.id, b); rooms.ready(a.id, true); rooms.ready(b.id, true)

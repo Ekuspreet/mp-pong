@@ -13,11 +13,11 @@ export class AuthService {
   constructor(private db: Db, private sessionDays: number, private production: boolean) {}
   async register(username: string, password: string): Promise<AuthUser> {
     const display = username.trim(), normalized = normalizeUsername(display)
-    if (!/^[A-Za-z0-9_]{3,20}$/.test(display)) throw Object.assign(new Error('Username must be 3–20 letters, numbers, or underscores'), { code: 'INVALID_USERNAME', status: 400 })
-    if (password.length < 8 || password.length > 128) throw Object.assign(new Error('Password must be 8–128 characters'), { code: 'INVALID_PASSWORD', status: 400 })
+    if (!/^[A-Za-z0-9_]{3,20}$/.test(display)) throw Object.assign(new Error('GamerName must be 3–20 letters, numbers, or underscores'), { code: 'INVALID_USERNAME', status: 400 })
+    if (password.length < 1 || password.length > 128) throw Object.assign(new Error('Password is required and must be at most 128 characters'), { code: 'INVALID_PASSWORD', status: 400 })
     const user = { id: randomUUID(), username: display, guest: false }, now = Date.now(), passwordHash = await argon2.hash(password, { type: argon2.argon2id })
     try { this.db.prepare('INSERT INTO users(id,username_normalized,username_display,password_hash,is_guest,created_at,last_seen_at) VALUES (?, ?, ?, ?, 0, ?, ?)').run(user.id, normalized, display, passwordHash, now, now) }
-    catch { throw Object.assign(new Error('Username is already registered'), { code: 'USERNAME_TAKEN', status: 409 }) }
+    catch { throw Object.assign(new Error('GamerName is already registered'), { code: 'USERNAME_TAKEN', status: 409 }) }
     return user
   }
   async login(username: string, password: string): Promise<AuthUser> {
@@ -25,10 +25,14 @@ export class AuthService {
     if (!row || !(await argon2.verify(row.password_hash, password))) throw Object.assign(new Error('Invalid username or password'), { code: 'INVALID_CREDENTIALS', status: 401 })
     return { id: row.id, username: row.username_display, guest: false }
   }
-  createGuest(): AuthUser {
+  createGuest(requestedUsername?: string): AuthUser {
+    const requested = requestedUsername?.trim()
+    if (requested && !/^[A-Za-z0-9_-]{3,20}$/.test(requested)) throw Object.assign(new Error('GamerName must be 3–20 letters, numbers, underscores, or hyphens'), { code: 'INVALID_USERNAME', status: 400 })
     for (let attempt = 0; attempt < 10; attempt++) {
-      const suffix = randomBytes(3).toString('hex').toUpperCase(), username = `Guest-${suffix}`, user = { id: randomUUID(), username, guest: true }, now = Date.now()
-      try { this.db.prepare('INSERT INTO users(id,username_normalized,username_display,password_hash,is_guest,created_at,last_seen_at) VALUES (?, ?, ?, ?, 1, ?, ?)').run(user.id, normalizeUsername(username), username, 'guest-account', now, now); return user } catch { /* retry the unlikely name collision */ }
+      const suffix = randomBytes(3).toString('hex').toUpperCase(), username = requested ?? `Guest-${suffix}`, user = { id: randomUUID(), username, guest: true }, now = Date.now()
+      try { this.db.prepare('INSERT INTO users(id,username_normalized,username_display,password_hash,is_guest,created_at,last_seen_at) VALUES (?, ?, ?, ?, 1, ?, ?)').run(user.id, normalizeUsername(username), username, 'guest-account', now, now); return user } catch {
+        if (requested) throw Object.assign(new Error('That GamerName is already in orbit'), { code: 'USERNAME_TAKEN', status: 409 })
+      }
     }
     throw Object.assign(new Error('Could not allocate a guest account'), { code: 'GUEST_UNAVAILABLE', status: 503 })
   }
