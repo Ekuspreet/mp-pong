@@ -1,0 +1,28 @@
+services:
+  client:
+    build:
+      context: .
+      dockerfile: client/Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      VITE_API_BASE_URL: http://localhost:3000/api
+      VITE_WS_BASE_URL: ws://localhost:3000/ws
+    depends_on:
+      - server
+
+  server:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      PORT: 3000
+      CLIENT_ORIGIN: http://localhost:8080
+      DATABASE_PATH: /data/polygon-pong.sqlite
+    volumes:
+      - pong-data:/data
+
+volumes:
+  pong-data:

@@ -76,29 +76,16 @@ The interface deliberately uses plain HTML and Canvas primitives. Ranked play, c
 
 ### Docker
 
-Build from the repository root. Supply the public browser endpoints when building;
-Vite embeds them in the client bundle, so runtime `-e VITE_...` variables cannot
-change them (see [Vite environment variables](https://vite.dev/guide/env-and-mode)).
+Run the client and server from the repository root:
 
 ```bash
-docker build -t polygon-pong \
-  --build-arg VITE_API_BASE_URL=https://pong.example.com/api \
-  --build-arg VITE_WS_BASE_URL=wss://pong.example.com/ws .
-
-docker run -d --name polygon-pong \
-  -p 127.0.0.1:3000:3000 \
-  -e CLIENT_ORIGIN=https://pong.example.com \
-  -v polygon-pong-data:/data \
-  polygon-pong
+docker compose up --build
 ```
 
-Replace `pong.example.com` with your domain and forward HTTPS and WebSocket
-traffic through your reverse proxy to port 3000. The container serves the built
-client, API, and WebSocket endpoint together. Production session cookies require
-HTTPS. `CLIENT_ORIGIN` is the public origin, without an `/api` path.
+Open `http://localhost:8080`. The client runs Vite's development server and
+connects to the API and WebSocket server on port 3000. Both Dockerfiles use the
+repository root as their build context. Local `.env` files are excluded;
+Compose supplies the environment variables.
 
-The image runs as the `node` user and includes only production dependencies.
-A named volume preserves SQLite data; an existing bind-mounted data directory
-must be writable by container UID 1000. Rooms and running games remain in memory
-and reset when the container restarts. Build tooling and local `.env` files are
-excluded from the runtime image. Each npm project uses its own lockfile.
+SQLite data is saved in the `pong-data` volume. Stop with `docker compose down`.
+Use `docker compose down -v` only when you also want to delete the database.
