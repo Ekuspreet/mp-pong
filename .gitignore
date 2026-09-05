@@ -25,3 +25,4 @@ pnpm-debug.log*
 # Editor
 .DS_Store
 .vscode/
+ plan/
