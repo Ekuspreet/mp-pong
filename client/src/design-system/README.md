@@ -7,20 +7,20 @@ font weights, radii, and responsive variants remain available.
 
 ## Tokens
 
-| Category | Utilities / tokens |
-| --- | --- |
-| Palette | `bg-space-950`, `bg-space-900`, `bg-space-800`, `text-cream`, `text-ink`, `border-teal`, `bg-orange`, `bg-red`, `bg-yellow`, `text-error` |
-| Transparency | `bg-space-950/45`, `border-teal/60` |
-| Fonts | `font-sans`, `font-display`, `font-mono` |
-| Type sizes | `text-control`, `text-control-sm`, `text-label`, `text-badge`, `text-error`, `text-icon` |
-| Tracking | `tracking-control`, `tracking-label`, `tracking-badge` |
-| Control sizes | `min-h-control`, `size-control`, `min-h-control-sm` |
-| Padding | `px-control-x py-control-y`, `px-control-sm-x py-control-sm-y`, `px-field-x py-field-y` |
-| Gaps | `gap-control-gap`, `gap-field-gap` (or default `gap-2`, `gap-4`, etc.) |
-| Shadows | `shadow-print`, `shadow-control`, `shadow-control-hover`, `shadow-control-active`, `shadow-control-disabled`, `shadow-ghost`, `shadow-focus` |
-| Borders | `border-(length:--border-width-heavy) border-ink` |
-| Motion | `duration-(--duration-control)` |
-| Breakpoints | `phone:` (420px), `tablet:` (760px), plus Tailwind defaults |
+| Category      | Utilities / tokens                                                                                                                           |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| Palette       | `bg-space-950`, `bg-space-900`, `bg-space-800`, `text-cream`, `text-ink`, `border-teal`, `bg-orange`, `bg-red`, `bg-yellow`, `text-error`    |
+| Transparency  | `bg-space-950/45`, `border-teal/60`                                                                                                          |
+| Fonts         | `font-sans`, `font-display`, `font-mono`                                                                                                     |
+| Type sizes    | `text-control`, `text-control-sm`, `text-label`, `text-badge`, `text-error`, `text-icon`                                                     |
+| Tracking      | `tracking-control`, `tracking-label`, `tracking-badge`                                                                                       |
+| Control sizes | `min-h-control`, `size-control`, `min-h-control-sm`                                                                                          |
+| Padding       | `px-control-x py-control-y`, `px-control-sm-x py-control-sm-y`, `px-field-x py-field-y`                                                      |
+| Gaps          | `gap-control-gap`, `gap-field-gap` (or default `gap-2`, `gap-4`, etc.)                                                                       |
+| Shadows       | `shadow-print`, `shadow-control`, `shadow-control-hover`, `shadow-control-active`, `shadow-control-disabled`, `shadow-ghost`, `shadow-focus` |
+| Borders       | `border-(length:--border-width-heavy) border-ink`                                                                                            |
+| Motion        | `duration-(--duration-control)`                                                                                                              |
+| Breakpoints   | `phone:` (420px), `tablet:` (760px), plus Tailwind defaults                                                                                  |
 
 `text-error` sets both error color and error font size. For independent control,
 use `text-(color:--color-error)` or `text-(length:--text-error)`.
@@ -36,7 +36,7 @@ import { Button } from './design-system/Button'
 import { Panel } from './design-system/Panel'
 import { TextField } from './design-system/TextField'
 
-<Panel tone="dark" className="p-6 tablet:p-8">
+;<Panel tone="dark" className="p-6 tablet:p-8">
   <TextField id="nickname" label="Nickname" required />
   <Button variant="secondary" size="compact" className="mt-4 w-full">
     Join room

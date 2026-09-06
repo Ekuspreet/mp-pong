@@ -18,7 +18,14 @@ export default function DeckShell({
               <span>{leftTitle}</span>
             </h1>
           )}
-          <div className="deck-shell__content" role="region" aria-label={leftTitle || 'Room actions'} tabIndex={0}>{left}</div>
+          <div
+            className="deck-shell__content"
+            role="region"
+            aria-label={leftTitle || 'Room actions'}
+            tabIndex={0}
+          >
+            {left}
+          </div>
           {leftTitle && <div className="deck-shell__rail" aria-hidden="true" />}
         </DeckPanel>
         <div className="deck-shell__hinge" aria-hidden="true" />
@@ -28,7 +35,14 @@ export default function DeckShell({
               <span>{rightTitle}</span>
             </h2>
           )}
-          <div className="deck-shell__content" role="region" aria-label={rightTitle || 'Game configuration'} tabIndex={0}>{right}</div>
+          <div
+            className="deck-shell__content"
+            role="region"
+            aria-label={rightTitle || 'Game configuration'}
+            tabIndex={0}
+          >
+            {right}
+          </div>
           {rightTitle && (
             <div className="deck-shell__rail" aria-hidden="true" />
           )}

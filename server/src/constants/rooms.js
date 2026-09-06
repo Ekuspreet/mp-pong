@@ -1,0 +1,16 @@
+const GAME_FORMAT_IDS = ['elimination', 'best_score', 'stocks']
+const GAME_MODIFIER_IDS = ['vortex', 'pulse', 'orbit', 'wormhole']
+const ROOM_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+const ROOM_CODE_LENGTH = 6
+const ROOM_CODE_ATTEMPTS = 100
+const MAX_ROOM_PLAYERS = 8
+const MIN_ROOM_PLAYERS = 2
+export {
+  GAME_FORMAT_IDS,
+  GAME_MODIFIER_IDS,
+  MAX_ROOM_PLAYERS,
+  MIN_ROOM_PLAYERS,
+  ROOM_ALPHABET,
+  ROOM_CODE_ATTEMPTS,
+  ROOM_CODE_LENGTH,
+}

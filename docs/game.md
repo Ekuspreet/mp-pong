@@ -10,7 +10,7 @@ Polygon Pong is a multiplayer variation of Pong in which each active player prot
 
 With `N` active players, the main arena is a regular `N`-sided polygon. Each player controls one paddle that moves along the inside of their assigned side. A single ball moves continuously through the arena. When a player fails to return the ball and it passes through their defended side, that player is eliminated.
 
-After each elimination, the arena is rebuilt for the remaining players. This continues until only two players remain. The final two players then compete in a traditional rectangular Pong arena. The last surviving player wins the match.
+After each elimination, the arena is rebuilt for the remaining players. This continues until only two players remain. The final two players then compete in a square Pong arena. The last surviving player wins the match.
 
 ## 2. Objective
 
@@ -30,7 +30,7 @@ There are no points or extra lives in the standard ruleset. Every stage is sudde
 - **Paddle:** The movable barrier used by a player to return the ball.
 - **Return:** A valid contact between the ball and the inward-facing surface of a paddle.
 - **Miss:** The ball reaching a player's defended boundary without making a valid paddle return.
-- **Final duel:** The rectangular, two-player stage played by the last two active players.
+- **Final duel:** The square, two-player stage played by the last two active players.
 
 ## 4. Match Setup
 
@@ -83,7 +83,7 @@ When three or more players are active:
 
 ### 5.2 Final two-player stage
 
-When two players remain, play switches to a traditional rectangular Pong arena:
+When two players remain, play switches to a square Pong arena:
 
 - One player protects the left goal line.
 - The other player protects the right goal line.
@@ -211,7 +211,7 @@ After an elimination, the arena does not reshape while the ball is moving. Inste
 2. The old ball and arena stop being active.
 3. The remaining players keep their relative clockwise order.
 4. If three or more players remain, the server constructs a new regular polygon with one side per survivor.
-5. If two players remain, the server constructs the rectangular final-duel arena.
+5. If two players remain, the server constructs the square final-duel arena.
 6. Surviving paddles are placed at the centers of their new sides.
 7. The ball is placed at the center.
 8. A new countdown begins.
@@ -310,7 +310,7 @@ If every remaining player forfeits or disconnects before a winner can be determi
 4. A paddle contact returns the ball into the arena.
 5. Missing the ball causes immediate elimination.
 6. After an elimination, play pauses and the arena is rebuilt for the survivors.
-7. The last two players switch to a rectangular classical-Pong arena.
+7. The last two players switch to a square classical-Pong arena.
 8. The first finalist to miss is eliminated.
 9. The last surviving player wins.
 10. The server makes every official gameplay decision.

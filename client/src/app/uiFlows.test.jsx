@@ -14,6 +14,7 @@ import AppRoutes from './AppRoutes.jsx'
 import { ServicesProvider } from './services.js'
 import { SessionProvider } from '../features/session/SessionProvider.jsx'
 import { GameConnectionProvider } from '../features/session/GameConnectionProvider.jsx'
+import MatchView from '../features/match/MatchView.jsx'
 
 vi.mock('../features/app-shell/SiteBackground/index.js', () => ({
   SiteBackground: () => null,
@@ -61,6 +62,75 @@ function setup(path = '/lobby', currentUser = { id: 'u1', username: 'Pilot' }) {
 }
 
 describe('UI feature integration', () => {
+  it('logs only misses, not successful ball returns', () => {
+    const snapshot = {
+      matchId: 'm1',
+      hostId: 'u1',
+      tick: 1,
+      stage: 1,
+      phase: 'playing',
+      phaseEndsAt: null,
+      arena: { type: 'duel', sides: [], vertices: [] },
+      ball: { position: { x: 0, y: 0 }, velocity: { x: 1, y: 0 }, radius: 6 },
+      paddles: [],
+      players: [
+        {
+          id: 'u1',
+          username: 'Pilot',
+          status: 'active',
+          placement: null,
+          returns: 0,
+          eliminatedAt: null,
+          eliminationReason: null,
+          disconnectedAt: null,
+        },
+        {
+          id: 'u2',
+          username: 'Other',
+          status: 'active',
+          placement: null,
+          returns: 0,
+          eliminatedAt: null,
+          eliminationReason: null,
+          disconnectedAt: null,
+        },
+      ],
+      serverTime: Date.now(),
+      winnerId: null,
+      startedAt: Date.now(),
+      longestRally: 0,
+    }
+
+    const { rerender } = render(
+      <MatchView
+        snapshot={snapshot}
+        userId="u1"
+        status="connected"
+        onLeave={() => {}}
+      />,
+    )
+
+    rerender(
+      <MatchView
+        snapshot={{
+          ...snapshot,
+          tick: 2,
+          players: snapshot.players.map((player) =>
+            player.id === 'u1'
+              ? { ...player, status: 'eliminated', eliminationReason: 'miss' }
+              : player,
+          ),
+        }}
+        userId="u1"
+        status="connected"
+        onLeave={() => {}}
+      />,
+    )
+
+    expect(screen.getByText(/Pilot missed the ball/i)).toBeTruthy()
+    expect(screen.queryByText(/returned the ball/i)).toBeNull()
+  })
+
   it('creates a configured room and handles consecutive room/match events', async () => {
     const { services, connection, mount } = setup()
     mount()
@@ -105,10 +175,8 @@ describe('UI feature integration', () => {
         payload: { matchId: 'm1', players: [], phase: 'playing', stage: 2 },
       })
     })
-    expect(
-      await screen.findByRole('heading', { name: 'Match m1' }),
-    ).toBeTruthy()
-    expect(screen.getByText(/Phase: playing/)).toBeTruthy()
+    expect(await screen.findByRole('heading', { name: 'Players' })).toBeTruthy()
+    expect(screen.getByText('Phase changed to playing')).toBeTruthy()
   })
 
   it('validates registration before invoking the authentication service', async () => {

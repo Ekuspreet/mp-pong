@@ -1,5 +1,6 @@
 export const landingCopy = {
-  description: 'Play The Classic Pong In A Polygon. Defend Your Side To Be The Last One Standing.',
+  description:
+    'Play The Classic Pong In A Polygon. Defend Your Side To Be The Last One Standing.',
 }
 
 export const firstNames = [
@@ -32,7 +33,7 @@ export const firstNames = [
   'Photon',
   'Cosmic',
   'Astra',
-  'Infinity'
+  'Infinity',
 ]
 
 export const secondNames = [
@@ -65,14 +66,19 @@ export const secondNames = [
   'Cosmonaut',
   'Adventurer',
   'Rider',
-  'Discoverer'
+  'Discoverer',
 ]
 const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
 
 export function generateCallSign(random = Math.random) {
   const pick = (values) => values[Math.floor(random() * values.length)]
   const first = pick(firstNames)
-  const compatibleSecondNames = secondNames.filter((name) => first.length + name.length <= 14)
-  const code = Array.from({ length: 4 }, () => alphabet[Math.floor(random() * alphabet.length)]).join('')
+  const compatibleSecondNames = secondNames.filter(
+    (name) => first.length + name.length <= 14,
+  )
+  const code = Array.from(
+    { length: 4 },
+    () => alphabet[Math.floor(random() * alphabet.length)],
+  ).join('')
   return `${first}-${pick(compatibleSecondNames)}-${code}`
 }

@@ -58,4 +58,19 @@ describe('socket resource ownership', () => {
     await rejected
     expect(vi.getTimerCount()).toBe(0)
   })
+
+  it('preserves server error codes for UI recovery flows', async () => {
+    const transport = new GameSocket('ws://test', vi.fn(), vi.fn(), FakeSocket)
+    const pending = transport.send('room.join', { roomId: 'CLOSED' })
+    const socket = FakeSocket.instances[0]
+    socket.onmessage({
+      data: JSON.stringify({
+        type: 'error',
+        requestId: socket.sent[0].requestId,
+        payload: { code: 'ROOM_CLOSED', message: 'Room has already started' },
+      }),
+    })
+    await expect(pending).rejects.toMatchObject({ code: 'ROOM_CLOSED' })
+    transport.close()
+  })
 })

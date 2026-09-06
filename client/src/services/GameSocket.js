@@ -33,9 +33,11 @@ export class GameSocket {
       if (request) {
         clearTimeout(request.timer)
         this.requests.delete(message.requestId)
-        if (message.type === 'error')
-          request.reject(new Error(message.payload.message))
-        else request.resolve(message)
+        if (message.type === 'error') {
+          const error = new Error(message.payload.message)
+          error.code = message.payload.code
+          request.reject(error)
+        } else request.resolve(message)
       }
       this.onMessage(message)
     }

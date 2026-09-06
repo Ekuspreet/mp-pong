@@ -15,9 +15,7 @@ export default function LobbyPage() {
           error={lobby.error}
           creating={lobby.creating}
           onCreate={lobby.createRoom}
-          onJoin={(code, password) =>
-            navigate(`/rooms/${code}`, { state: { password } })
-          }
+          onJoin={(code) => navigate(`/rooms/${code}`)}
         />
       }
       right={

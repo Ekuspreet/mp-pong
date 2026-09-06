@@ -3,7 +3,14 @@
   "private": true,
   "version": "0.0.0",
   "description": "Server-authoritative multiplayer polygon Pong prototype. Run the client and server from their own directories.",
+  "scripts": {
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
   "engines": {
     "node": ">=22"
+  },
+  "devDependencies": {
+    "prettier": "3.9.6"
   }
 }

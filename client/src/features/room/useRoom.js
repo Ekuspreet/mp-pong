@@ -28,12 +28,17 @@ export default function useRoom(id, userId, onMatchStarted, onLeave) {
     if (status !== 'connected') return
     let active = true
     channel.send('room.join', { roomId: id }).catch((failure) => {
-      if (active) setError(failure.message)
+      if (!active) return
+      if (['ROOM_CLOSED', 'ROOM_NOT_FOUND'].includes(failure.code)) {
+        onLeave()
+        return
+      }
+      setError(failure.message)
     })
     return () => {
       active = false
     }
-  }, [channel, status, id])
+  }, [channel, status, id, onLeave])
 
   const state = selectRoomState(room, userId)
   async function command(type, payload) {

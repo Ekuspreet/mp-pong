@@ -5,7 +5,6 @@ import vortexArt from '../../assets/gameoptions/vortex.png'
 import pulseArt from '../../assets/gameoptions/pulse.png'
 import blackHoleArt from '../../assets/gameoptions/blackhole.png'
 import wormholeArt from '../../assets/gameoptions/wormhole.png'
-import multiballArt from '../../assets/gameoptions/multiball.png'
 
 export const GAME_FORMATS = [
   {
@@ -19,7 +18,7 @@ export const GAME_FORMATS = [
     id: 'best_score',
     label: 'Best Score',
     description:
-      'Misses award knockout points. Win by reaching the target or leading when time expires.',
+      'Each miss counts against the defender. The first player to reach 25 misses loses; the player with the fewest misses wins.',
     art: bestScoreArt,
   },
   {
@@ -34,32 +33,29 @@ export const GAME_MODIFIERS = [
   {
     id: 'vortex',
     label: 'Vortex',
-    description: 'A central vortex curves the ball and pulls it inward.',
+    description:
+      'A central vortex curves the ball clockwise or counterclockwise and grows stronger over time.',
     art: vortexArt,
   },
   {
     id: 'pulse',
     label: 'Pulse',
-    description: 'Regular shockwaves push the ball outward.',
+    description:
+      'Shockwaves periodically originate at the center and push the ball outward.',
     art: pulseArt,
   },
   {
     id: 'orbit',
     label: 'Orbit',
-    description: 'A moving gravity well bends nearby ball paths.',
+    description:
+      'A gentle gravity well bends the ball into an alternating orbit.',
     art: blackHoleArt,
   },
   {
     id: 'wormhole',
     label: 'Wormhole',
     description:
-      'Two portals teleport the ball while preserving velocity and entry angle.',
+      'A dark entrance and light exit teleport the ball while preserving momentum and direction.',
     art: wormholeArt,
-  },
-  {
-    id: 'multiball',
-    label: 'Multiball',
-    description: 'A second ball appears after a long rally.',
-    art: multiballArt,
   },
 ]

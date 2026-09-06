@@ -1,40 +1,29 @@
 #!/usr/bin/env bash
 
-set -Eeuo pipefail
-
 PROJECT_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-SERVER_DIR="$PROJECT_ROOT/server"
-CLIENT_DIR="$PROJECT_ROOT/client"
-PIDS=()
 
-for project_dir in "$SERVER_DIR" "$CLIENT_DIR"; do
-  if [[ ! -d "$project_dir/node_modules" ]]; then
-    echo "Missing dependencies in $project_dir. Run npm install from that directory first." >&2
-    exit 1
-  fi
-done
+prefix() {
+    local name="$1"
 
-cleanup() {
-  trap - EXIT INT TERM
-  if ((${#PIDS[@]})); then
-    kill "${PIDS[@]}" 2>/dev/null || true
-    wait "${PIDS[@]}" 2>/dev/null || true
-  fi
+    while IFS= read -r line; do
+        printf '[%s: %(%H:%M:%S)T] %s\n' "$name" -1 "$line"
+    done
 }
 
-trap cleanup EXIT INT TERM
+cleanup() {
+    kill $(jobs -pr) 2>/dev/null || true
+}
 
-echo "Starting Polygon Pong server..."
-(cd "$SERVER_DIR" && npm run dev) &
-PIDS+=("$!")
+trap cleanup INT TERM EXIT
 
-echo "Starting Polygon Pong client..."
-(cd "$CLIENT_DIR" && npm run dev) &
-PIDS+=("$!")
+(
+    cd "$PROJECT_ROOT/server"
+    npm run dev
+) 2>&1 | prefix "server" &
 
-set +e
-wait -n "${PIDS[@]}"
-STATUS=$?
-set -e
+(
+    cd "$PROJECT_ROOT/client"
+    npm run dev
+) 2>&1 | prefix "client" &
 
-exit "$STATUS"
+wait

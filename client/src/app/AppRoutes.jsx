@@ -15,9 +15,9 @@ export default function AppRoutes() {
   const gamePage = location.pathname.startsWith('/matches/')
   return (
     <>
-      {!gamePage && <SiteBackground />}
+      <SiteBackground />
       <PageTransition routeKey={location.pathname} disabled={gamePage}>
-        <SessionNavigation />
+        {!gamePage && <SessionNavigation />}
         <Routes location={location}>
           <Route path="/" element={<LandingPage />} />
           <Route path="/register" element={<SignupPage />} />

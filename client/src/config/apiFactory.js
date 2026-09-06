@@ -3,8 +3,14 @@ const withoutTrailingSlash = (value, name) => {
   return value.replace(/\/+$/, '')
 }
 
-const apiBaseUrl = withoutTrailingSlash(import.meta.env.VITE_API_BASE_URL, 'VITE_API_BASE_URL')
-const wsBaseUrl = withoutTrailingSlash(import.meta.env.VITE_WS_BASE_URL, 'VITE_WS_BASE_URL')
+const apiBaseUrl = withoutTrailingSlash(
+  import.meta.env.VITE_API_BASE_URL,
+  'VITE_API_BASE_URL',
+)
+const wsBaseUrl = withoutTrailingSlash(
+  import.meta.env.VITE_WS_BASE_URL,
+  'VITE_WS_BASE_URL',
+)
 const endpoint = (path) => `${apiBaseUrl}${path}`
 
 export const apiFactory = {

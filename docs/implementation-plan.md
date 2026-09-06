@@ -13,7 +13,7 @@ The prototype is successful when it can demonstrate the complete standard match 
 2. A signed-in player can create or join a room and mark themselves ready.
 3. A room host can start a match with 2–8 ready players.
 4. The server alone advances paddles, ball physics, collisions, eliminations, stage transitions, and results.
-5. Three or more players play in a regular polygon; the final two play sudden-death rectangular Pong.
+5. Three or more players play in a regular polygon; the final two play sudden-death square Pong.
 6. A disconnected player can reconnect within ten seconds; otherwise they forfeit.
 7. Eliminated players can spectate and all players see final placements.
 8. Match results and useful playtest statistics are saved in SQLite.
@@ -31,24 +31,24 @@ The prototype is successful when it can demonstrate the complete standard match 
 
 Use TypeScript throughout even though the Express runtime is JavaScript. It keeps network messages, game state, and physics contracts synchronized across packages and still compiles to ordinary Node.js JavaScript.
 
-| Area | Choice | Reason |
-| --- | --- | --- |
-| Monorepo | npm workspaces | Already configured and sufficient for three packages. |
-| Runtime | Node.js 22 LTS | Stable runtime with modern web APIs and good TypeScript tooling. |
-| Server HTTP | Express 5 | REST endpoints, middleware, health checks, and static production hosting. |
-| Real-time transport | `ws` | Small, direct WebSocket layer; avoids hiding protocol and authority decisions. |
-| Client | React 19 + Vite | Already scaffolded; fast iteration and simple production build. |
-| Rendering | HTML Canvas 2D | Efficient for a moving polygon, paddles, and ball without a game-engine dependency. |
-| Routing | React Router | Clear auth, lobby, room, match, and results routes. |
-| Data fetching | Native `fetch` plus a small API module | Prototype needs are modest; avoid unnecessary client-state machinery. |
-| Database | SQLite 3 via `better-sqlite3` | Synchronous transactions are simple and reliable for a single-process game server. It stores a standard SQLite database file. |
-| Schema/migrations | Drizzle ORM + Drizzle Kit | Typed schema and reviewable SQL migrations without a heavy runtime. |
-| Validation | Zod | Validate REST bodies, environment variables, and every WebSocket message. |
-| Authentication | Argon2id password hashes; opaque random session tokens in `HttpOnly`, `SameSite=Lax` cookies | Simple revocable sessions; no JWT revocation complexity. Store only a token hash in the database. |
-| Logging | Pino + request IDs | Structured server, room, match, and connection logs. |
-| Tests | Vitest; Supertest; React Testing Library | Unit physics tests, REST integration tests, socket integration tests, and lightweight UI tests. |
-| Formatting/linting | Prettier + Oxlint + TypeScript strict mode | Fast, consistent checks across workspaces. |
-| Local operations | `.env`, npm scripts, optional Dockerfile | One-command development and a straightforward single-instance deployment. |
+| Area                | Choice                                                                                       | Reason                                                                                                                        |
+| ------------------- | -------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Monorepo            | npm workspaces                                                                               | Already configured and sufficient for three packages.                                                                         |
+| Runtime             | Node.js 22 LTS                                                                               | Stable runtime with modern web APIs and good TypeScript tooling.                                                              |
+| Server HTTP         | Express 5                                                                                    | REST endpoints, middleware, health checks, and static production hosting.                                                     |
+| Real-time transport | `ws`                                                                                         | Small, direct WebSocket layer; avoids hiding protocol and authority decisions.                                                |
+| Client              | React 19 + Vite                                                                              | Already scaffolded; fast iteration and simple production build.                                                               |
+| Rendering           | HTML Canvas 2D                                                                               | Efficient for a moving polygon, paddles, and ball without a game-engine dependency.                                           |
+| Routing             | React Router                                                                                 | Clear auth, lobby, room, match, and results routes.                                                                           |
+| Data fetching       | Native `fetch` plus a small API module                                                       | Prototype needs are modest; avoid unnecessary client-state machinery.                                                         |
+| Database            | SQLite 3 via `better-sqlite3`                                                                | Synchronous transactions are simple and reliable for a single-process game server. It stores a standard SQLite database file. |
+| Schema/migrations   | Drizzle ORM + Drizzle Kit                                                                    | Typed schema and reviewable SQL migrations without a heavy runtime.                                                           |
+| Validation          | Zod                                                                                          | Validate REST bodies, environment variables, and every WebSocket message.                                                     |
+| Authentication      | Argon2id password hashes; opaque random session tokens in `HttpOnly`, `SameSite=Lax` cookies | Simple revocable sessions; no JWT revocation complexity. Store only a token hash in the database.                             |
+| Logging             | Pino + request IDs                                                                           | Structured server, room, match, and connection logs.                                                                          |
+| Tests               | Vitest; Supertest; React Testing Library                                                     | Unit physics tests, REST integration tests, socket integration tests, and lightweight UI tests.                               |
+| Formatting/linting  | Prettier + Oxlint + TypeScript strict mode                                                   | Fast, consistent checks across workspaces.                                                                                    |
+| Local operations    | `.env`, npm scripts, optional Dockerfile                                                     | One-command development and a straightforward single-instance deployment.                                                     |
 
 `node-sqlite3` can be substituted if “sqlite3” specifically means that package, but `better-sqlite3` is preferable here because game persistence is low-volume and transaction-oriented. SQLite must never be queried from the fixed-rate game tick; write stage/match results only outside latency-sensitive simulation work.
 
@@ -138,13 +138,13 @@ The client renders the latest authoritative state to Canvas. It buffers two snap
 
 Use UUIDs or ULIDs as externally visible IDs and integer SQLite primary keys internally if desired. Store all timestamps as UTC integers or ISO strings consistently.
 
-| Table | Important fields | Notes |
-| --- | --- | --- |
-| `users` | `id`, `username_normalized` unique, `username_display`, `password_hash`, `created_at`, `last_seen_at` | Start with username/password; email recovery and verification are out of scope. |
-| `sessions` | `id`, `user_id`, `token_hash` unique, `created_at`, `expires_at`, `last_used_at`, `revoked_at` | Cookie carries raw random token; DB stores its SHA-256 hash. |
-| `matches` | `id`, `room_code`, `ruleset_version`, `status`, `started_at`, `ended_at`, `winner_user_id`, `no_contest_reason`, `initial_player_count` | Insert at match start, finalize transactionally. |
-| `match_players` | `match_id`, `user_id`, `initial_order`, `placement`, `eliminated_at`, `elimination_reason`, `returns`, `longest_rally_returns`, `survival_ms` | Unique on match/player and placement where applicable. |
-| `match_stages` | `id`, `match_id`, `stage_number`, `player_count`, `arena_type`, `serve_seed`, `started_at`, `ended_at`, `eliminated_user_id` | Useful for debugging fairness and replaying serves. |
+| Table           | Important fields                                                                                                                              | Notes                                                                           |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| `users`         | `id`, `username_normalized` unique, `username_display`, `password_hash`, `created_at`, `last_seen_at`                                         | Start with username/password; email recovery and verification are out of scope. |
+| `sessions`      | `id`, `user_id`, `token_hash` unique, `created_at`, `expires_at`, `last_used_at`, `revoked_at`                                                | Cookie carries raw random token; DB stores its SHA-256 hash.                    |
+| `matches`       | `id`, `room_code`, `ruleset_version`, `status`, `started_at`, `ended_at`, `winner_user_id`, `no_contest_reason`, `initial_player_count`       | Insert at match start, finalize transactionally.                                |
+| `match_players` | `match_id`, `user_id`, `initial_order`, `placement`, `eliminated_at`, `elimination_reason`, `returns`, `longest_rally_returns`, `survival_ms` | Unique on match/player and placement where applicable.                          |
+| `match_stages`  | `id`, `match_id`, `stage_number`, `player_count`, `arena_type`, `serve_seed`, `started_at`, `ended_at`, `eliminated_user_id`                  | Useful for debugging fairness and replaying serves.                             |
 
 Rooms do not need persistence in the prototype. They disappear when empty or after an inactivity timeout. Use an unambiguous, case-insensitive six-character invite code; never expose internal maps or session identifiers.
 
@@ -156,7 +156,7 @@ Every room stores one format identifier and zero or more unique modifier identif
 {
   "options": {
     "format": "stocks",
-    "modifiers": ["vortex", "multiball"]
+    "modifiers": ["vortex", "wormhole"]
   }
 }
 ```
@@ -165,21 +165,21 @@ Every room stores one format identifier and zero or more unique modifier identif
 
 Formats (choose exactly one):
 
-| Identifier | Name | Behavior |
-| --- | --- | --- |
-| `elimination` | Elimination | A miss eliminates the defender, and the polygon is rebuilt after each elimination. |
-| `best_score` | Best Score | Nobody is eliminated. A miss awards one knockout point to the last opposing player who touched the ball. The first player to the configured target wins, or the highest score when the configured time expires. |
-| `stocks` | Stocks | Each player starts with three lives. A miss loses one life; causing an opponent to miss grants 0.5 lives. The arena shrinks only when a player loses their final life. |
+| Identifier    | Name        | Behavior                                                                                                                                                                                                        |
+| ------------- | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `elimination` | Elimination | A miss eliminates the defender, and the polygon is rebuilt after each elimination.                                                                                                                              |
+| `best_score`  | Best Score  | Nobody is eliminated until a player reaches 25 misses. Each miss counts against its defender; when the limit is reached, the player with the fewest misses wins. |
+| `stocks`      | Stocks      | Each player starts with three lives. A miss loses one life; causing an opponent to miss grants 0.5 lives. The arena shrinks only when a player loses their final life.                                          |
 
 Modifiers (choose any number):
 
-| Identifier | Name | Behavior |
-| --- | --- | --- |
-| `vortex` | Vortex | A central vortex curves the ball and slowly pulls it inward. |
-| `pulse` | Pulse | The center releases a visible shockwave at regular intervals, pushing the ball outward. |
-| `orbit` | Orbit | A gravity well moves around the arena, bending the ball's path when it passes nearby. |
-| `wormhole` | Wormhole | Two portals teleport the ball while preserving its speed and entry angle. |
-| `multiball` | Multiball | A second ball appears after a rally reaches a configured number of returns. |
+| Identifier  | Name      | Behavior                                                                                |
+| ----------- | --------- | --------------------------------------------------------------------------------------- |
+| `vortex`    | Vortex    | A central vortex curves the ball and pushes it outward with increasing strength.        |
+| `pulse`     | Pulse     | The center releases a visible shockwave at regular intervals, pushing the ball outward. |
+| `orbit`     | Orbit     | A gravity well moves around the arena, bending the ball's path when it passes nearby.   |
+| `wormhole`  | Wormhole  | Two portals teleport the ball while preserving its speed and entry angle.               |
+| `multiball` | Multiball | A second ball appears after a rally reaches a configured number of returns.             |
 
 ## 6. Room and match state machines
 
@@ -299,7 +299,7 @@ Each commit should build and pass the checks introduced up to that point. Commit
 **Objective:** Represent every arena and paddle position with deterministic geometry.
 
 - Generate clockwise regular polygons for 3–8 players with inward normals and stable side IDs.
-- Generate the rectangular duel with defended left/right boundaries and neutral top/bottom walls.
+- Generate the square duel with defended left/right boundaries and neutral top/bottom walls.
 - Represent paddle position as a normalized scalar along its side; calculate equal 30% lengths, endpoint padding, and world-space segments.
 - Provide fair serve-vector generation that excludes near-parallel and near-vertex trajectories.
 
@@ -388,7 +388,7 @@ Each commit should build and pass the checks introduced up to that point. Commit
 
 #### Commit 16 — `feat(client): render authoritative arenas and game state`
 
-**Objective:** Display playable polygon and rectangular stages using simple Canvas graphics.
+**Objective:** Display playable polygon and square-duel stages using Canvas graphics.
 
 - Scale a fixed logical coordinate system responsively with device-pixel-ratio handling.
 - Draw background, boundaries, neutral walls/corners, colored paddles, ball, player names/status, countdown, elimination notice, and winner.

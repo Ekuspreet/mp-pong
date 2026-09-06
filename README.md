@@ -1,6 +1,6 @@
 # Polygon Pong
 
-A functional, server-authoritative prototype of multiplayer elimination Pong. Three or more players defend a polygon; the final two play a rectangular sudden-death duel.
+A functional, server-authoritative prototype of multiplayer elimination Pong. Three or more players defend a polygon; the final two play a square sudden-death duel.
 
 See [the rules](docs/game.md) and [the implementation plan](docs/implementation-plan.md).
 
@@ -9,7 +9,7 @@ See [the rules](docs/game.md) and [the implementation plan](docs/implementation-
 - React 19, Vite, React Router, and Canvas 2D
 - Express 5 and WebSockets via `ws`
 - Shared strict TypeScript physics and Zod protocol contracts
-- SQLite through `better-sqlite3`
+- SQLite through Drizzle ORM and `better-sqlite3`
 - Argon2id passwords and revocable cookie sessions
 - Vitest, Supertest, and WebSocket integration tests
 
@@ -49,6 +49,14 @@ The database defaults to `data/polygon-pong.sqlite`. Rooms and active simulation
 
 ## Verify
 
+Install the repository formatting tool with `npm install` at the repository root.
+Run `npm run format` to format the repository or `npm run format:check` to
+check formatting without changing files. The shared Prettier configuration uses
+single quotes, no semicolons, two-space indentation, and trailing commas.
+Generated files and dependency lockfiles are excluded. Both commands are also
+available in `client` to format or check just the frontend. Oxlint handles linting
+separately.
+
 ```bash
 cd client
 npm run lint
@@ -57,7 +65,6 @@ npm run build
 
 cd ../server
 npm run lint
-npm run typecheck
 npm test
 npm run build
 ```
