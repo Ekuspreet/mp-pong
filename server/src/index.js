@@ -43,8 +43,8 @@ const shutdown = (exitCode = 0) => {
   setTimeout(() => process.exit(1), 5_000).unref()
 }
 
-process.on('SIGINT', shutdown)
-process.on('SIGTERM', shutdown)
+process.on('SIGINT', () => shutdown(0))
+process.on('SIGTERM', () => shutdown(0))
 process.on('uncaughtException', (error) => {
   logger.fatal({ err: error }, 'Uncaught exception')
   shutdown(1)

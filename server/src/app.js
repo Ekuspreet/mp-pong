@@ -44,10 +44,15 @@ export function createApp(config, db, services, logger = createLogger(config)) {
     matchRoutes(createMatchController(services.matchRepository), authenticate),
   )
 
-  const clientDist = fileURLToPath(
-    new URL('../../client/dist/', import.meta.url),
+  const clientDistCandidates = [
+    process.env.CLIENT_DIST_PATH,
+    fileURLToPath(new URL('../../client/dist/', import.meta.url)), // monorepo checkout: server/src/app.js -> ../../client/dist
+    fileURLToPath(new URL('../public/', import.meta.url)), // bundled dist/: dist/src/app.js -> ../public
+  ].filter(Boolean)
+  const clientDist = clientDistCandidates.find((candidate) =>
+    existsSync(candidate),
   )
-  if (config.NODE_ENV === 'production' && existsSync(clientDist)) {
+  if (config.NODE_ENV === 'production' && clientDist) {
     app.use(express.static(clientDist))
     app.get('/{*splat}', (_request, response) =>
       response.sendFile(

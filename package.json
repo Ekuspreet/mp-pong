@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "description": "Server-authoritative multiplayer polygon Pong prototype. Run the client and server from their own directories.",
   "scripts": {
+    "build": "bash scripts/build-dist.sh",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
